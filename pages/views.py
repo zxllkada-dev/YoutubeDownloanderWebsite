@@ -115,7 +115,7 @@ def user_profile(request):
 # GET VIDEOS DATA API
 def PaidAPI_Downloander(url):
 
-    API_KEY = "1eb84db7c2mshfe959c731c39c1dp1adf87jsn8c3f611b2111"
+    API_KEY = ""
 
     headers = {
         'x-rapidapi-key': API_KEY,
