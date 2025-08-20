@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+{% include 'includes/head-tag.html' %}
+
+<head>
+    <title>Downloander</title>
+</head>
+
+<body>
+    <!-- header -->
+    {% include 'includes/header.html' %}
+
+    <div class="container">
+        <a href="https://t.me/zkada" class="promo-banner">
+            <div class="promo-content">
+                <span class="new-badge">For Sale</span>
+                <span class="promo-text">This website for sale — if you're intrested inbox me on telegram: @zkada</span>
+                <span>→</span>
+            </div>
+        </a>
+
+        <div class="header">
+            <h1 class="main-title">Online Video and Image Downloader</h1>
+            <h3 class="subtitle">Fast, free, and simple. Save videos and images from 1,000+ websites</h3>
+        </div>
+
+        <div class="input-section">
+            <div class="input-container">
+                <span class="link-icon">
+                    <svg class="input-icon" stroke="currentColor" fill="currentColor" stroke-width="0"
+                        viewBox="0 0 20 20" aria-hidden="true" class="h-5 w-5 text-gray-500 dark:text-gray-400"
+                        height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </span>
+                <input type="text" id="videoUrl" class="url-input" placeholder="Paste the link here">
+                <button class="clear-btn" onclick="clearInput()">✕</button>
+            </div>
+            <button class="download-btn" onclick="fetchVideo()">
+                <span id="btnIcon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-arrow-down-to-line mr-2 h-5 w-5">
+                        <path d="M12 17V3"></path>
+                        <path d="m6 11 6 6 6-6"></path>
+                        <path d="M19 21H5"></path>
+                    </svg>
+                </span>
+                <span id="btnText">Download</span>
+            </button>
+        </div>
+
+        <div id="error" style="color:red; display:none;"></div>
+
+        <!-- Loading -->
+        <div id="loading" style="display:none; text-align:center; padding:20px;">
+            <div
+                style="border: 4px solid #f3f3f3; border-top: 4px solid #1a56db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto;">
+            </div>
+            <p>Fetching video...</p>
+        </div>
+
+        <!-- Video Card -->
+        <div id="videoCard" class="video-card" style="display:none;">
+            <div class="video-title" id="videoTitle"></div>
+
+            <div class="main-actions">
+                <button class="action-btn" id="showVideoQuality">📹 More Video Quality</button>
+                <button class="action-btn purple" id="showAudioQuality">🎵 More Audio Quality</button>
+                <a id="downloadThumb" class="action-btn secondary" style="display:none;" target="_blank" rel="noopener noreferrer">🖼️ Download Thumbnail</a>
+            </div>
+
+            <div class="quality-section" id="videoQualitySection" style="display:none;">
+                <p class="quality-title">Video Quality Options</p>
+                <div class="quality-options" id="videoQualityOptions"></div>
+                <div class="instructions">
+                    <p>Click on your desired video resolution to download. If download fails, try alternative download
+                        links</p>
+                </div>
+            </div>
+
+            <div class="quality-section" id="audioQualitySection" style="display:none;">
+                <p class="quality-title">Audio Quality Options</p>
+                <div class="quality-options" id="audioQualityOptions"></div>
+                <div class="instructions">
+                    <p>Click on your desired audio quality to download. If download fails, try alternative download
+                        links</p>
+                </div>
+            </div>
+
+            <p class="note">If the file does not download directly after clicking the download button, please try to
+                right-click the download button and choose "Save Link As...".</p>
+        </div>
+
+        <div class="ad-space">Advertisement Space</div>
+    </div>
+
+
+    <script>
+        function getCsrfToken() {
+            // Try to get from cookie first
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            // Try to get from meta tag
+            const metaTag = document.querySelector('meta[name="csrf-token"]');
+            if (metaTag) {
+                return metaTag.getAttribute('content');
+            }
+            // Try to get from hidden input
+            const hiddenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (hiddenInput) {
+                return hiddenInput.value;
+            }
+            return '';
+        }
+
+        document.getElementById('videoUrl').oninput = function (e) {
+            document.querySelector('.clear-btn').style.display = e.target.value ? 'block' : 'none';
+        };
+
+        function clearInput() {
+            document.getElementById('videoUrl').value = '';
+            document.querySelector('.clear-btn').style.display = 'none';
+            document.getElementById('videoCard').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        async function fetchVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            if (!url) return alert('Enter a URL');
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('videoCard').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('btnText').textContent = 'Processing...';
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'video_url=' + encodeURIComponent(url)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('btnText').textContent = 'Download';
+
+                if (data.error) {
+                    document.getElementById('error').textContent = data.message;
+                    document.getElementById('error').style.display = 'block';
+                } else {
+                    fillVideoData(data);
+                }
+            } catch (e) {
+                console.error('Fetch error:', e);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('btnText').textContent = 'Download';
+                document.getElementById('error').textContent = 'Request failed: ' + e.message;
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function fillVideoData(data) {
+            document.getElementById('videoTitle').textContent = data.title || 'Video';
+
+            // Show/hide video quality options
+            document.getElementById('showVideoQuality').onclick = function () {
+                const section = document.getElementById('videoQualitySection');
+                const audioSection = document.getElementById('audioQualitySection');
+                if (section.style.display === 'none' || section.style.display === '') {
+                    section.style.display = 'block';
+                    audioSection.style.display = 'none'; // Hide audio section
+                } else {
+                    section.style.display = 'none';
+                }
+            };
+
+            // Show/hide audio quality options
+            document.getElementById('showAudioQuality').onclick = function () {
+                const section = document.getElementById('audioQualitySection');
+                const videoSection = document.getElementById('videoQualitySection');
+                if (section.style.display === 'none' || section.style.display === '') {
+                    section.style.display = 'block';
+                    videoSection.style.display = 'none'; // Hide video section
+                } else {
+                    section.style.display = 'none';
+                }
+            };
+
+            // Thumbnail
+            if (data.thumbnail_url) {
+                const thumb = document.getElementById('downloadThumb');
+                thumb.href = data.thumbnail_url;
+                thumb.style.display = 'inline-flex';
+            }
+
+            // Video quality options
+            if (data.video_formats && data.video_formats.length > 0) {
+                const container = document.getElementById('videoQualityOptions');
+                container.innerHTML = '';
+                data.video_formats.forEach(f => {
+                    container.innerHTML += `
+                        <div class="quality-item">
+                            <a href="${f.url}" target="_blank" class="quality-link">
+                                <span>↓</span> ${f.quality} (${f.size_mb} MB)
+                            </a>
+                        </div>`;
+                });
+            }
+
+            // Audio quality options
+            if (data.audio_formats && data.audio_formats.length > 0) {
+                const container = document.getElementById('audioQualityOptions');
+                container.innerHTML = '';
+                data.audio_formats.forEach(f => {
+                    container.innerHTML += `
+                        <div class="quality-item">
+                            <a href="${f.url}" target="_blank" class="quality-link">
+                                <span>↓</span> ${f.quality} (${f.size_mb} MB)
+                            </a>
+                        </div>`;
+                });
+            }
+
+            document.getElementById('videoQualitySection').style.display = 'block';
+            document.getElementById('videoCard').style.display = 'block';
+        }
+
+        document.getElementById('videoUrl').onkeypress = function (e) {
+            if (e.key === 'Enter') fetchVideo();
+        };
+    </script>
+
+    <!-- footer -->
+    {% include 'includes/footer.html' %}
+</body>
+
+</html>

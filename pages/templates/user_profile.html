@@ -1,0 +1,525 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    {% include 'includes/head-tag.html' %}
+    <head>
+        <title>User Profile</title>
+        <style>
+            /* Main Container */
+            .user-profile-main-zx {
+                width: 100%;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            /* Profile Section */
+            .profile-section-zy {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 2.5rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                margin-bottom: 2rem;
+                border: 1px solid #f0f0f0;
+            }
+
+            .profile-header-zz {
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 2px solid #f8f9fa;
+            }
+
+            .profile-header-zz h1 {
+                color: #1a202c;
+                font-weight: 700;
+                font-size: 2rem;
+                margin: 0;
+            }
+
+            .profile-grid-za {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+
+            @media (max-width: 768px) {
+                .profile-grid-za {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .profile-field-group-zb {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .profile-label-zc {
+                font-weight: 600;
+                color: #4a5568;
+                margin-bottom: 0.5rem;
+                font-size: 0.95rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .profile-value-zd {
+                padding: 1rem;
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                font-size: 1rem;
+                background: #f7fafc;
+                transition: all 0.3s ease;
+            }
+
+            .profile-value-zd.editable {
+                background: white;
+                border-color: #cbd5e0;
+            }
+
+            .profile-value-zd.editable:focus {
+                outline: none;
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            }
+
+            /* History Section */
+            .history-section-ze {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 2.5rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                border: 1px solid #f0f0f0;
+            }
+
+            .history-header-zf {
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 2px solid #f8f9fa;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .history-header-zf h2 {
+                color: #1a202c;
+                font-weight: 700;
+                font-size: 1.75rem;
+                margin: 0;
+            }
+
+            .history-count {
+                background: #4299e1;
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 600;
+            }
+
+            /* Enhanced Table Styling */
+            .history-table-container {
+                overflow-x: auto;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+                background: white;
+            }
+
+            .history-table-zg {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.95rem;
+            }
+
+            .history-table-zg thead {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .history-table-zg th {
+                text-align: left;
+                padding: 1.25rem 1.5rem;
+                font-weight: 600;
+                color: white;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                position: relative;
+            }
+
+            .history-table-zg th:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                right: 0;
+                top: 20%;
+                height: 60%;
+                width: 1px;
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .history-table-zg tbody tr {
+                border-bottom: 1px solid #f1f5f9;
+                transition: all 0.2s ease;
+            }
+
+            .history-table-zg tbody tr:hover {
+                background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            .history-table-zg td {
+                padding: 1.5rem;
+                vertical-align: middle;
+                color: #2d3748;
+            }
+
+            .history-title-zi {
+                font-weight: 600;
+                color: #1a202c;
+                margin-bottom: 0.25rem;
+                line-height: 1.4;
+            }
+
+            .history-order-id-zj {
+                font-size: 0.8rem;
+                color: #718096;
+                font-family: 'Courier New', monospace;
+                background: #f7fafc;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                display: inline-block;
+            }
+
+            .history-created-at {
+                color: #4a5568;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .history-created-at::before {
+                content: '📅';
+                font-size: 0.8rem;
+            }
+
+            .history-expand-btn-zk {
+                background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+                border: none;
+                color: white;
+                cursor: pointer;
+                font-weight: 600;
+                padding: 0.75rem 1.5rem;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                font-size: 0.875rem;
+                box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+            }
+
+            .history-expand-btn-zk:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(66, 153, 225, 0.4);
+                background: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
+            }
+
+            .history-expand-btn-zk:active {
+                transform: translateY(0);
+            }
+
+            .history-details-zl {
+                display: none;
+                padding: 2rem;
+                background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+                border-radius: 12px;
+                margin: 1rem 0;
+                border: 1px solid #e6f3ff;
+            }
+
+            .history-details-zl h4 {
+                color: #2d3748;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                font-size: 1.1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .history-details-zl h4:first-of-type::before {
+                content: '🎥';
+            }
+
+            .history-details-zl h4:last-of-type::before {
+                content: '🎵';
+            }
+
+            .media-grid-zm {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .media-card-zn {
+                padding: 1.5rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                background: white;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            }
+
+            .media-card-zn:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+                border-color: #cbd5e0;
+            }
+
+            .media-quality-zo {
+                font-weight: 600;
+                color: #2d3748;
+                font-size: 0.95rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .media-size-zp {
+                font-size: 0.85rem;
+                color: #718096;
+                margin-bottom: 1rem;
+            }
+
+            .download-btn-zq {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.75rem 1.25rem;
+                background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+                color: white;
+                border-radius: 8px;
+                text-decoration: none;
+                font-size: 0.875rem;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+            }
+
+            .download-btn-zq::before {
+                content: '⬇️';
+                font-size: 0.8rem;
+            }
+
+            .download-btn-zq:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(72, 187, 120, 0.4);
+                background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+                text-decoration: none;
+                color: white;
+            }
+
+            .empty-history-zr {
+                text-align: center;
+                padding: 4rem 2rem;
+                color: #718096;
+                border: 2px dashed #e2e8f0;
+                border-radius: 16px;
+                background: #f8faff;
+            }
+
+            .empty-history-zr::before {
+                content: '📁';
+                font-size: 3rem;
+                display: block;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
+
+            .empty-history-zr p {
+                font-size: 1.1rem;
+                margin: 0;
+            }
+
+            /* Action Links */
+            .back-link-zs {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 2rem;
+                color: #4299e1;
+                text-decoration: none;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                padding: 0.75rem 1.5rem;
+                border: 2px solid #4299e1;
+                border-radius: 8px;
+                background: rgba(66, 153, 225, 0.05);
+            }
+
+            .back-link-zs:hover {
+                color: white;
+                background: #4299e1;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(66, 153, 225, 0.3);
+                text-decoration: none;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .user-profile-main-zx {
+                    padding: 1rem;
+                }
+
+                .profile-section-zy,
+                .history-section-ze {
+                    padding: 1.5rem;
+                }
+
+                .history-table-zg th,
+                .history-table-zg td {
+                    padding: 1rem 0.75rem;
+                }
+
+                .media-grid-zm {
+                    grid-template-columns: 1fr;
+                }
+
+                .history-header-zf {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+            }
+        </style>
+    </head>
+<body>
+    <!-- header -->
+    {% include 'includes/header.html' %}
+    
+    <div class="user-profile-main-zx">
+        <!-- Profile Section -->
+        <div class="profile-section-zy">
+            <div class="profile-header-zz">
+                <h1>User Profile</h1>
+            </div>
+
+            <div class="profile-grid-za">
+                <!-- Column 1 -->
+                <div class="profile-field-group-zb">
+                    <label class="profile-label-zc">Username</label>
+                    <input type="text" class="profile-value-zd" value="{{ user.username }}" readonly>
+                </div>
+
+                <div class="profile-field-group-zb">
+                    <label class="profile-label-zc">Email</label>
+                    <input type="email" class="profile-value-zd editable" value="{{ user.email }}">
+                </div>
+
+                <!-- Column 2 -->
+                <div class="profile-field-group-zb">
+                    <label class="profile-label-zc">First Name</label>
+                    <input type="text" class="profile-value-zd editable" value="{{ user.first_name }}">
+                </div>
+
+                <div class="profile-field-group-zb">
+                    <label class="profile-label-zc">Last Name</label>
+                    <input type="text" class="profile-value-zd editable" value="{{ user.last_name }}">
+                </div>
+            </div>
+
+            <!-- <a href="/" class="back-link-zs">← Back to Home</a> -->
+        </div>
+
+        <!-- History Section -->
+        <div class="history-section-ze">
+            <div class="history-header-zf">
+                <h2>Download History</h2>
+                {% if user_history %}
+                <div class="history-count">{{ user_history|length }} items</div>
+                {% endif %}
+            </div>
+
+            {% if user_history %}
+                <div class="history-table-container">
+                    <table class="history-table-zg">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Title</th>
+                                <th>Created At</th>
+                                <!-- <th>Actions</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_item in user_history %}
+                            <tr>
+                                <td>
+                                    <div class="history-order-id-zj">{{ user_item.order_id }}</div>
+                                </td>
+                                <td>
+                                    <div class="history-title-zi">{{ user_item.data.title|truncatechars:60 }}</div>
+                                </td>
+                                <td>
+                                    <div class="history-created-at">{{ user_item.created_at|date:"M d, Y H:i" }}</div>
+                                </td>
+                                <!-- <td>
+                                    <button class="history-expand-btn-zk" onclick="toggleDetails(this)">View Details</button>
+                                </td> -->
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="history-details-zl" id="details-{{ user_item.order_id }}">
+                                        <h4>Video Formats</h4>
+                                        <div class="media-grid-zm">
+                                            {% for videos in user_item.data.video_formats %}
+                                                <div class="media-card-zn">
+                                                    <div class="media-quality-zo">Quality: {{ videos.quality }}</div>
+                                                    <div class="media-size-zp">Size: {{ videos.size_mb }} MB</div>
+                                                    <a href="{{ videos.url }}" class="download-btn-zq" target="_blank">Download</a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+
+                                        <h4>Audio Formats</h4>
+                                        <div class="media-grid-zm">
+                                            {% for audios in user_item.data.audio_formats %}
+                                                <div class="media-card-zn">
+                                                    <div class="media-quality-zo">Quality: {{ audios.quality }}</div>
+                                                    <div class="media-size-zp">Size: {{ audios.size_mb }} MB</div>
+                                                    <a href="{{ audios.url }}" class="download-btn-zq" target="_blank">Download</a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-history-zr">
+                    <p>No download history found</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- footer -->
+    {% include 'includes/footer.html' %}
+
+    <script>
+        function toggleDetails(button) {
+            const row = button.closest('tr');
+            const detailsRow = row.nextElementSibling;
+            const detailsDiv = detailsRow.querySelector('.history-details-zl');
+            
+            if (detailsDiv.style.display === 'block') {
+                detailsDiv.style.display = 'none';
+                button.textContent = 'View Details';
+            } else {
+                detailsDiv.style.display = 'block';
+                button.textContent = 'Hide Details';
+            }
+        }
+    </script>
+</body>
+</html>
